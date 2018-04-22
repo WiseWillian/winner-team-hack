@@ -30,7 +30,7 @@ func PostBip(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Erro ao transformar JSON em objeto")
 	}
 
-	pushedFirego, err := f.Push(coordenada)
+	pushedFirego, err := f.Child("marks").Push(coordenada)
 
 	fmt.Printf("%s: %s\n", pushedFirego, err)
 }
