@@ -1,33 +1,43 @@
 package main
 
 import (
+	"gopkg.in/zabawaba99/firego.v1"
 	"github.com/gorilla/mux"
 	"net/http"
 	"log"
+	"fmt"
+	"io/ioutil"
 	"encoding/json"
 )
 
-type Location struct {
-	Latitude string `json:"latitude"`
-	Longintude string `json:"longitude"`
+type Coordenada struct {
+	Latitude string `json:"lat"`
+	Longitude string `json:"lng"`
 }
 
-func Endpoint(w http.ResponseWriter, r *http.Request) {
-	location := new (Location)
+var f = firego.New("https://winner-hackthon.firebaseio.com/", nil)
 
-	location.Latitude = "111232.001"
-	location.Longintude = "225546.102"
+func PostBip(w http.ResponseWriter, r *http.Request) {
+	coordenada := new (Coordenada)
 
-	jsonLocation, _ := json.Marshal(location)
+	body, err_reading := ioutil.ReadAll(r.Body)
+	if(err_reading != nil) {
+		fmt.Println("Erro ao ler dados da requisição!")
+	}
 
-	w.Write(jsonLocation)
+	err_unmarshal := json.Unmarshal(body, &coordenada)
+	if(err_unmarshal != nil) {
+		fmt.Println("Erro ao transformar JSON em objeto")
+	}
+
+	pushedFirego, err := f.Push(coordenada)
+
+	fmt.Printf("%s: %s\n", pushedFirego, err)
 }
 
 func SetupRouter() *mux.Router {
 	router := mux.NewRouter()
-
-	router.HandleFunc("/return", Endpoint).Methods("GET")
-
+	router.HandleFunc("/post", PostBip).Methods("POST")
 	return router
 }
 
